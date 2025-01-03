@@ -1,4 +1,4 @@
-# ATSAM-scheduler
+# Cortex M0+ Scheduler
 A simple round robin scheduler implemented on an ATSAMD21 MCU
 
 The scheduler uses the systick timer and service calls, features of the Cortex M0+ processor, to switch between tasks.
