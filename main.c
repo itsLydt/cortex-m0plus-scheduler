@@ -9,7 +9,7 @@
 #include "sam.h"
 #include "ATSAMD21/drivers/gpio/gpio.h"
 
-#include "task.h"
+#include "scheduler.h"
 
 /* GPIO pin / port assignments */
 #define LED_PORT GPIOB
@@ -17,10 +17,6 @@
 #define LED2 5
 #define LED3 6
 const uint32_t led_mask = (1 << LED1) | (1 << LED2) | (1 << LED3);
-
-/* the number of tasks to schedule */
-#define NUM_TASKS 4
-struct Task_t user_tasks[NUM_TASKS + 1];
 
 /* frequency of the systick clock - TODO this can probably be read out from clock module */
 #define SYSTICK_CLK_HZ 1000000U
@@ -31,6 +27,7 @@ struct Task_t user_tasks[NUM_TASKS + 1];
 const uint32_t CYCLES_PER_MS = SYSTICK_CLK_HZ / 1000;
 
 /* declarations of sample tasks */
+void idle_task_handler();
 void task1();
 void task2();
 void task3();
@@ -46,13 +43,13 @@ int main(void)
 	/* Initialize stack space for the scheduler */
 	
 	/* Initialize stack, control block info for each task */
+	task_signature tasks[NUM_TASKS + 1] = {task1, task2, task3, task4 };
+	initialize_tasks(idle_task_handler, tasks);
 	
 	/* Switch the scheduler over to PSP (program stack pointer) */
-	
-	/* Enable the systick timer, which effectively starts the scheduler */
-	
-	/* Kick off the first task */
-	task1();
+		
+	/* Start the scheduler */
+	start();
 	
 	/* This will not execute, as the scheduler will execute the idle_task_handler function if there are no ready tasks */
     while (1);
@@ -60,7 +57,7 @@ int main(void)
 
 /* wait at least delay_ms milliseconds, approximately */
 void wait(uint32_t delay_ms){
-	delay_ms *= CYCLES_PER_MS / 6; //appx number of instructions in the loop body below
+	delay_ms *= CYCLES_PER_MS / 6; //6 = appx number of instructions in the loop body below
 	for(; delay_ms > 0; --delay_ms){
 		asm("nop");
 	}
