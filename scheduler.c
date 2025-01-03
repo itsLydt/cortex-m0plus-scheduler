@@ -10,6 +10,7 @@
 void initialize_tasks(task_signature idle_task, task_signature* tasks){
 	/* task 0 is always the idle task */
 	user_tasks[0].task_handler = idle_task;
+	user_tasks[0].current_state = READY;
 	
 	for(int i = 1; i < NUM_TASKS + 1; i++){
 		user_tasks[i].task_handler = tasks[i - 1];
