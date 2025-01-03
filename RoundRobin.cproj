@@ -143,6 +143,12 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ATSAMD21\drivers\gpio\gpio.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="ATSAMD21\drivers\gpio\gpio.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Device_Startup\startup_samd21.c">
       <SubType>compile</SubType>
     </Compile>
@@ -157,6 +163,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="ATSAMD21\" />
+    <Folder Include="ATSAMD21\drivers\" />
+    <Folder Include="ATSAMD21\drivers\gpio\" />
     <Folder Include="Device_Startup\" />
   </ItemGroup>
   <ItemGroup>
