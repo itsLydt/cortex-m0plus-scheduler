@@ -16,7 +16,7 @@
 #define LED1 4
 #define LED2 5
 #define LED3 6
-uint32_t led_mask = (1 << LED1) | (1 << LED2) | (1 << LED3);
+const uint32_t led_mask = (1 << LED1) | (1 << LED2) | (1 << LED3);
 
 /* the number of tasks to schedule */
 #define NUM_TASKS 4
@@ -29,6 +29,12 @@ struct Task_t user_tasks[NUM_TASKS + 1];
 
 /* number of cpu cycles in one millisecond */
 const uint32_t CYCLES_PER_MS = SYSTICK_CLK_HZ / 1000;
+
+/* declarations of sample tasks */
+void task1();
+void task2();
+void task3();
+void task4();
 
 int main(void)
 {
@@ -76,7 +82,7 @@ void idle_task_handler(){
 	while(1);
 }
 
-/* example tasks */
+/* example task implementations */
 void task1(){
 	blink((1 << LED1), 500);
 }
