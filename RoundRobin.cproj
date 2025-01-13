@@ -164,6 +164,9 @@
     <Compile Include="scheduler.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="stack.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="task.h">
       <SubType>compile</SubType>
     </Compile>

@@ -10,9 +10,14 @@
 #define SCHEDULER_H_
 
 #include "task.h"
+#include "stack.h"
 
 /* the number of tasks to schedule */
 #define NUM_TASKS 4
+
+#if (NUM_TASKS > MAX_TASKS)
+#error "ERROR: device cannot support the specified number of tasks"
+#endif
 
 struct Task_t user_tasks[NUM_TASKS + 1];
 
