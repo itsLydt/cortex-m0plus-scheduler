@@ -98,5 +98,5 @@ void task4(){
 }
 
 void HardFault_Handler(){
-	task4();
+	blink(led_mask, 250);
 }
