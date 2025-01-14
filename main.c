@@ -46,7 +46,7 @@ int main(void)
 	task_signature tasks[NUM_TASKS] = {task1, task2, task3, task4 };
 	initialize_scheduler(idle_task_handler, tasks);
 			
-	/* Switch the scheduler over to PSP (process stack pointer) */
+	/* Switch over to PSP (process stack pointer) so that user tasks cannot affect the main stack */
 	switch_to_psp(); //todo do this inside scheduler init. Currently doesn't work because stack gets mangled in here
 	
 	/* Start the scheduler */

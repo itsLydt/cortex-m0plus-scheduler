@@ -87,7 +87,7 @@ __attribute__((naked)) void switch_to_psp(){
 
 	/* configure value of PSP to point to stack of first task */
 	
-	// store task number in R0 per C calling convention
+	// store task number in R0 (first arg) per C calling convention
 	__asm volatile("MOV R0, #1");
 	__asm volatile("BL get_stack_address");		// branch to get_stack_address
 	__asm volatile("MSR PSP, R0");				// return value of get_stack_address is stored in R0. Write this value to PSP
