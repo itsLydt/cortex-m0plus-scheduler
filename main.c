@@ -18,13 +18,8 @@
 #define LED3 6
 const uint32_t led_mask = (1 << LED1) | (1 << LED2) | (1 << LED3);
 
-/* frequency of the systick clock - TODO this can probably be read out from clock module */
-#define SYSTICK_CLK_HZ 1000000U
-/* frequency of systick interrupt */
-#define TICK_HZ 1000U
-
-/* number of cpu cycles in one millisecond */
-const uint32_t CYCLES_PER_MS = SYSTICK_CLK_HZ / 1000;
+/* default number of cpu cycles in one millisecond */
+const uint32_t CYCLES_PER_MS = SYSTEM_CLOCK_FREQ / 1000;
 
 /* declarations of sample tasks */
 void idle_task_handler();

@@ -19,6 +19,8 @@
 #error "ERROR: device cannot support the specified number of tasks"
 #endif
 
+#define SYSTEM_CLOCK_FREQ 1000000U
+
 struct Task_t user_tasks[NUM_TASKS + 1];
 
 __attribute__((naked)) void init_scheduler_stack(uint32_t stack_address);
@@ -28,6 +30,7 @@ __attribute__((naked)) void switch_to_psp();
 void initialize_scheduler(task_signature idle_task, task_signature* tasks);
 
 void start();
+
 
 
 #endif /* SCHEDULER_H_ */
