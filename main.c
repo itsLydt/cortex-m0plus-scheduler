@@ -61,10 +61,11 @@ void wait(uint32_t delay_ms){
 
 /* blink the specified LEDs with a specified delay between blinks */
 void blink(uint32_t leds, uint32_t delay){
+	GPIO_WritePort(LED_PORT, led_mask, 1);	// all LEDs off
 	while (1){
 		GPIO_WritePort(LED_PORT, leds, 0);	// LEDs on
 		wait(delay);
-		GPIO_WritePort(LED_PORT, leds, 1);	// LEDs off
+		GPIO_WritePort(LED_PORT, led_mask, 1);	// all LEDs off
 		wait(delay);
 	}
 }
