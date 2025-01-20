@@ -9,7 +9,7 @@
 
 uint32_t current_task_ticks = 0;
 uint8_t current_task = 1;
-uint8_t last_task = 1;
+//uint8_t last_task = 1;
 
 uint32_t MAX_TICKS = 0;
 /* frequency of the systick clock - TODO this can probably be read out from clock module */
@@ -124,14 +124,12 @@ void SysTick_Handler(){
 	if(++current_task_ticks >= MAX_TICKS && current_task > 0){
 		current_task_ticks = 0;
 		/* set next task to ready */
-		uint8_t next_task = (last_task + 1) % (NUM_TASKS + 1);
+		uint8_t next_task = (current_task + 1) % (NUM_TASKS + 1);
 		if(next_task == 0){
 			next_task = 1;
 		}
 		user_tasks[next_task].current_state = READY;
-		user_tasks[last_task].current_state = BLOCKED;
-		
-		current_task = next_task;
+		user_tasks[current_task].current_state = BLOCKED;
 
 		/* pend the context switch */
 		schedule();
@@ -145,8 +143,29 @@ void schedule(){
 	SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
 }
 
+uint8_t update_current_task(){
+	int state = BLOCKED;
+	
+	int next_task = current_task;
+	for(int i = 0; i < NUM_TASKS + 1; i++){
+		++next_task;
+		next_task %= NUM_TASKS + 1;
+		state = user_tasks[next_task].current_state;
+		if(next_task != 0 && state == READY){
+			// found a schedule-able task
+			current_task = next_task;
+			break;
+		}
+	}
+	if(state != READY) {
+		//no tasks to run
+		current_task = 0;
+	}
+	return current_task;
+}
+
 /* this handler performs the context switch */
-void PendSV_Handler(){
+__attribute__((naked)) void PendSV_Handler(){
 	/* 1. save state of current task */
 	__asm volatile("MRS R0, PSP"); 	// get the current task's stack pointer value
 	__asm volatile("SUB R0, #0x10"); //decrement
@@ -164,7 +183,24 @@ void PendSV_Handler(){
 
 	// 1b. save value of PSP
 	__asm volatile("PUSH {LR}"); //save value of link register
-	__asm volatile("BL save_psp_value"); //passes value in R0 to save_psp_value
+	__asm volatile("MOV R1, R0");	// move PSP value to R1
+	__asm volatile ("MOVS R0, %0" : : "r" (current_task) : "memory"); // load R0 with current task 
+	__asm volatile("BL save_stack_address"); //passes value in R0, R1 to save_stack_address
 	
 	/* 2. retrieve context of next task */
+	__asm volatile("BL update_current_task");	// current_task now in R0
+	__asm volatile("BL get_stack_address");		// retrieve stack address of the task to be switched to
+
+	// retrieve registers R4-R11
+	__asm volatile("LDM R0!, {R4-R7}");
+	__asm volatile("MOV R8, R4");
+	__asm volatile("MOV R9, R5");
+	__asm volatile("MOV R10, R6");
+	__asm volatile("MOV R11, R7");
+	__asm volatile("LDM R0!,{R4-R7}");
+		
+	//write stack address and exit
+	__asm volatile("MSR PSP, R0");
+	__asm volatile("POP {R0}"); //restore LR
+	__asm volatile("BX R0");
 }
