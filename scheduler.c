@@ -167,29 +167,28 @@ uint8_t update_current_task(){
 /* this handler performs the context switch */
 __attribute__((naked)) void PendSV_Handler(){
 	/* 1. save state of current task */
-	__asm volatile("MRS R0, PSP"); 	// get the current task's stack pointer value
-	__asm volatile("SUB R0, #0x10"); //decrement
+	__asm volatile("MRS R1, PSP"); 	// get the current task's stack pointer value
+	__asm volatile("SUB R1, #0x10"); //decrement
 
 	/* 1a. save register values not automatically stacked */
-	__asm volatile("STM R0!, {R4-R7}"); // push r4 - r7 to task private stack NOTE: STM stores in ascending order
+	__asm volatile("STM R1!, {R4-R7}"); // push r4 - r7 to task private stack NOTE: STM stores in ascending order
 	// move upper registers to lower
 	__asm volatile("MOV R4, R8");
 	__asm volatile("MOV R5, R9");
 	__asm volatile("MOV R6, R10");
 	__asm volatile("MOV R7, R11");
-	__asm volatile("SUB R0, #0x20"); // decrement for next push
-	__asm volatile("STM R0!, {R4-R7}"); //push r4 - r7 to task private stack
-	__asm volatile("SUB R0, #0x10"); //decrement stack pointer after STM
+	__asm volatile("SUB R1, #0x20"); // decrement for next push
+	__asm volatile("STM R1!, {R4-R7}"); //push r4 - r7 to task private stack
+	__asm volatile("SUB R1, #0x10"); //decrement stack pointer after STM
 
 	// 1b. save value of PSP
 	__asm volatile("PUSH {LR}"); //save value of link register
-	__asm volatile("MOV R1, R0");	// move PSP value to R1
-	__asm volatile ("MOVS R0, %0" : : "r" (current_task) : "memory"); // load R0 with current task 
-	__asm volatile("BL save_stack_address"); //passes value in R0, R1 to save_stack_address
+	__asm volatile ("MOVS R0, %0" : : "r" (current_task) : "memory"); // load R0 with value of current_task 
+	__asm volatile("BL save_stack_address"); //passes value in R0, R1 to save_stack_address associated with current_task
 	
 	/* 2. retrieve context of next task */
-	__asm volatile("BL update_current_task");	// current_task now in R0
-	__asm volatile("BL get_stack_address");		// retrieve stack address of the task to be switched to
+	__asm volatile("BL update_current_task");	// update current_task, now in R0
+	__asm volatile("BL get_stack_address");		// retrieve stack address of the task to be switched to, now in R0
 
 	// retrieve registers R4-R11
 	__asm volatile("LDM R0!, {R4-R7}");
@@ -200,7 +199,7 @@ __attribute__((naked)) void PendSV_Handler(){
 	__asm volatile("LDM R0!,{R4-R7}");
 		
 	//write stack address and exit
-	__asm volatile("MSR PSP, R0");
+	__asm volatile("MSR PSP, R0");				// write back stack address
 	__asm volatile("POP {R0}"); //restore LR
 	__asm volatile("BX R0");
 }
