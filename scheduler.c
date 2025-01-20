@@ -17,6 +17,8 @@ uint32_t MAX_TICKS = 0;
 /* frequency of systick interrupt */
 #define TICK_HZ 1U // interrupt once per second
 
+__attribute__((naked)) void init_scheduler_stack(uint32_t stack_address);
+__attribute__((naked)) void switch_to_psp();
 void initialize_tasks(task_signature idle_task, task_signature* tasks);
 
 uint32_t get_stack_address(uint8_t task_number);
@@ -26,10 +28,28 @@ void init_systick_timer(uint32_t tick_hz);
 
 void schedule();
 
-void initialize_scheduler(task_signature idle_task, task_signature* tasks){
+__attribute__((naked)) void initialize_scheduler(task_signature idle_task, task_signature* tasks){	
+	//R0 -> R2
+	//R1 -> R1
+	//LR -> R4
+	__asm volatile("MOV R2, R0");
+	__asm volatile("MOV R4, LR");
+	
+	/* initialize stack space for the scheduler */
+	__asm volatile ("MOVS R0, %0" : : "r" (SCHED_STACK_END) : "memory"); // load R0 with value to assign scheduler stack
+	__asm volatile("BL init_scheduler_stack");
+	//init_scheduler_stack(SCHED_STACK_END);
 	
 	/* initialize stack space for user tasks and idle tasks */
-	initialize_tasks(idle_task, tasks);
+	// restore arg R2 -> R0
+	__asm volatile("MOV R0, R2");
+	__asm volatile("BL initialize_tasks");
+	//initialize_tasks(idle_task, tasks);
+	
+	/* Switch over to PSP (process stack pointer) so that user tasks cannot affect the main stack */
+	__asm volatile("BL switch_to_psp");
+	//switch_to_psp();
+	__asm volatile("BX R4");
 }
 
 
@@ -82,7 +102,7 @@ void start(){
 }
 
 __attribute__((naked)) void init_scheduler_stack(uint32_t stack_address){
-	__set_MSP(stack_address - 8*4);	// set main stack pointer value 
+	__set_MSP(stack_address - 8*4);	// set main stack pointer value - stack access after this will be corrupted. Need to copy existing stack to new stack
 	__ISB();
 	__asm volatile("BX LR");	// return
 }
@@ -109,7 +129,7 @@ __attribute__((naked)) void switch_to_psp(){
 	// set PSP as current stack pointer for thread mode
 	__set_CONTROL(2);							// bit[1] of CONTROL register 1: use PSP, 0: use MSP
 	
-	__asm volatile("BX R1 ");					// branch according to LR value stored in R1
+	__asm volatile("BX R1");					// branch according to LR value stored in R1
 }
 
 void init_systick_timer(uint32_t tick_hz){

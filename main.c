@@ -34,15 +34,9 @@ int main(void)
 	GPIO_SetPortDirection(LED_PORT, led_mask, GPIO_OUT);			// set LED pins as outputs
 	GPIO_WritePort(LED_PORT, led_mask, 1);							//turn off all LEDs	
 			
-	/* initialize stack space for the scheduler */
-	init_scheduler_stack(SCHED_STACK_END); //todo do this inside scheduler init. Currently doesn't work because stack gets mangled in here
-			
 	/* Initialize stack, control block info for each task */
 	task_signature tasks[NUM_TASKS] = {task1, task2, task3, task4 };
 	initialize_scheduler(idle_task_handler, tasks);
-			
-	/* Switch over to PSP (process stack pointer) so that user tasks cannot affect the main stack */
-	switch_to_psp(); //todo do this inside scheduler init. Currently doesn't work because stack gets mangled in here
 	
 	/* Start the scheduler */
 	start();

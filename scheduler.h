@@ -23,9 +23,6 @@
 
 struct Task_t user_tasks[NUM_TASKS + 1];
 
-__attribute__((naked)) void init_scheduler_stack(uint32_t stack_address);
-__attribute__((naked)) void switch_to_psp();
-
 /* initialize scheduler and configure tasks  using the specified function pointers. For now, assume that user provides enough tasks (foolish) */
 void initialize_scheduler(task_signature idle_task, task_signature* tasks);
 
