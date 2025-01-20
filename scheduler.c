@@ -102,7 +102,7 @@ void start(){
 }
 
 __attribute__((naked)) void init_scheduler_stack(uint32_t stack_address){
-	__set_MSP(stack_address - 8*4);	// set main stack pointer value - stack access after this will be corrupted. Need to copy existing stack to new stack
+	__set_MSP(stack_address);	// set main stack pointer value
 	__ISB();
 	__asm volatile("BX LR");	// return
 }
